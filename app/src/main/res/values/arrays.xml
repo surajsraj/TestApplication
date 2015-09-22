@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_syncConnectionTypes_entries">
+        <item>Connect with Wi-Fi</item>
+        <item>Use Any connection</item>
+    </string-array>
+    <string-array name="pref_syncConnectionTypes_values">
+        <item>Wi-Fi</item>
+        <item>Any</item>
+    </string-array>
+</resources>

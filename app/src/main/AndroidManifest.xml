@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="testapplication.com.example.sr00106369wrtc.testapplication" >
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:permission="android.permission.VIBRATE"
+        android:theme="@style/AppTheme" >
+        <receiver android:name=".MyWidget" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/myappwidget_info" />
+        </receiver>
+
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".Destination"
+            android:label="@string/title_activity_destination"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="testapplication.com.example.sr00106369wrtc.testapplication.MainActivity" />
+        </activity>
+        <activity
+            android:name=".Connection_Settings"
+            android:label="@string/title_activity_connection__settings"
+            android:parentActivityName=".MainActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="testapplication.com.example.sr00106369wrtc.testapplication.MainActivity" />
+        </activity>
+        <activity
+            android:name=".NetworkActivity"
+            android:label="@string/title_activity_network" >
+        </activity>
+        <activity
+            android:name=".NetworkReceiver"
+            android:label="@string/title_activity_network_receiver" >
+        </activity>
+    </application>
+
+</manifest>
