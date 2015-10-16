@@ -1,5 +1,6 @@
 package testapplication.com.example.sr00106369wrtc.testapplication;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -7,12 +8,16 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -29,6 +34,8 @@ public class NetworkActivity extends AppCompatActivity {
     // Whether the display should be refreshed.
     public static boolean refreshDisplay = true;
 
+    public static int location_requestCode = 1;
+
     // The user's current network preference setting.
     public static String sPref = null;
 
@@ -38,7 +45,7 @@ public class NetworkActivity extends AppCompatActivity {
     private NetworkReceiver receiver = new NetworkReceiver();
 
     WebView mWebView;
-    private static final String URL = "https://google.com";
+    private static final String URL = "https://apprtc-m.appspot.com/";
 
 
     @Override
@@ -73,9 +80,44 @@ public class NetworkActivity extends AppCompatActivity {
             Intent i = new Intent(getApplicationContext(),Connection_Settings.class);
             startActivity(i);
         }
+        if (id == R.id.action_dial) {
+            Intent i = new Intent(Intent.ACTION_DIAL);
+            i.setData(Uri.parse("tel:"));
+            startActivity(i);
+        }
+        if (id == R.id.action_contacts) {
+            Intent i = new Intent();
+            i.setComponent(new ComponentName("com.android.contacts", "com.android.contacts.DialtactsContactsEntryActivity"));
+            i.setAction("android.intent.action.MAIN");
+            i.addCategory("android.intent.category.LAUNCHER");
+            i.addCategory("android.intent.category.DEFAULT");
+            startActivity(i);
+        }
+        if (id == R.id.action_sms) {
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse("sms:"));
+            startActivity(i);
+        }
+        if (id == R.id.action_showLocation) {
+            Intent i = new Intent(this,LocationActivity.class);
+            startActivityForResult(i, location_requestCode);
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == location_requestCode){
+            if(resultCode == RESULT_OK){
+
+                String latitude = data.getStringExtra("latitude");
+                String longitude = data.getStringExtra("longitude");
+                Toast.makeText(NetworkActivity.this,"Latitude is:"+latitude+"\t"+"Longitude is:"+longitude , Toast.LENGTH_LONG).show();
+            }
+        }
+        super.onActivityResult(location_requestCode, resultCode, data);
+    }
 
     @Override
     public void onDestroy() {
@@ -136,9 +178,7 @@ public class NetworkActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mWebView.getSettings().setJavaScriptEnabled(true);
-        mWebView.getSettings().setBuiltInZoomControls(true);
-        mWebView.setWebViewClient(new WebViewClient());
+        setUpWebViewDefaults(mWebView);
         if(value) {
             Toast.makeText(NetworkActivity.this, "Connecting to the internet", Toast.LENGTH_LONG).show();
             mWebView.loadUrl(URL);
@@ -148,4 +188,39 @@ public class NetworkActivity extends AppCompatActivity {
         }
     }
 
+    private void setUpWebViewDefaults(WebView webView) {
+        WebSettings settings = webView.getSettings();
+
+        // Enable Javascript
+        settings.setJavaScriptEnabled(true);
+
+        // Use WideViewport and Zoom out if there is no viewport defined
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+
+        // Enable pinch to zoom without the zoom buttons
+        settings.setBuiltInZoomControls(true);
+
+        // Allow use of Local Storage
+        settings.setDomStorageEnabled(true);
+
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB) {
+            // Hide the zoom controls for HONEYCOMB+
+            settings.setDisplayZoomControls(false);
+        }
+
+        // Enable remote debugging via chrome://inspect
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
+
+        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebViewClient(new WebViewClient());
+
+        // AppRTC requires third party cookies to work
+        CookieManager cookieManager = CookieManager.getInstance();
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            cookieManager.setAcceptThirdPartyCookies(mWebView, true);
+        }
+    }
 }

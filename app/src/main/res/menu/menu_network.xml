@@ -4,4 +4,12 @@
     tools:context="testapplication.com.example.sr00106369wrtc.testapplication.NetworkActivity">
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_dial" android:title="@string/action_dial"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_contacts" android:title="@string/action_contacts"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_sms" android:title="@string/action_sms"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_showLocation" android:title="@string/action_showLocation"
+        android:orderInCategory="100" app:showAsAction="never" />
 </menu>

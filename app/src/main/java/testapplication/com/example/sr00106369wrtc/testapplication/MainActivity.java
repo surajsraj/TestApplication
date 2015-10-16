@@ -15,9 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebView;
 
-import com.ericsson.research.owr.Owr;
-import com.ericsson.research.owr.OwrBridge;
-
 public class MainActivity extends AppCompatActivity {
 
     NotificationCompat.Builder mBuilder;
