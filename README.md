@@ -7,3 +7,11 @@ Application with the below features.
 2. Notification contains a Notify class with a Notification Manager and NotifyBuilder.Compact to create a Inbox style notification.
 
 3. Connection Settings implementing a Preference screen and SharedPreferences for the connection type i.e. Wifi or Any, Network Activity with a Connection Manager and Webview to display webpage based on preference. Also a Broadcast receiver to detect changes to the connection and update accordingly.
+
+4. Native capabilities like the Native dialer, Access to Contacts, SMS
+
+5. Get location details like the Latitude and Longitude using the Play service and GoogleApiClient
+
+6.Video call using the WebChromeClient from apprtc.appspot 
+
+
