@@ -7,6 +7,7 @@
     <string name="action_contacts">Contacts</string>
     <string name="action_sms">SMS</string>
     <string name="action_showLocation">Show Location</string>
+    <string name="action_showAccelerometer">Get Accelerometer</string>
     <string name="title_activity_my_widget">MyWidget</string>
 
     <string name="destination">You have reached me!</string>
@@ -14,10 +15,11 @@
     <string name="title_activity_connection__settings">Connection_Settings</string>
 
     <string name="hello_world">Hello world!</string>
-    <string name="title_activity_network">NetworkActivity</string>
+    <string name="title_activity_network">Web page</string>
     <string name="title_activity_network_receiver">NetworkReceiver</string>
     <string name="pref_syncConnectionType">Connection Type</string>
     <string name="pref_syncConnectionTypes_default">Wi-Fi</string>
     <string name="title_activity_display_web_page">DisplayWebPage</string>
-    <string name="title_activity_location">LocationActivity</string>
+    <string name="title_activity_location">Location</string>
+    <string name="title_activity_accelerometer">Accelerometer</string>
 </resources>

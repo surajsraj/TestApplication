@@ -68,6 +68,22 @@
             android:name=".LocationActivity"
             android:label="@string/title_activity_location" >
         </activity>
+        <activity
+            android:name=".AccelerometerActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_accelerometer"
+            android:parentActivityName=".NetworkActivity"
+            android:screenOrientation="portrait" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="testapplication.com.example.sr00106369wrtc.testapplication.NetworkActivity" />
+        </activity>
+
+        <service
+            android:name=".LocationService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
     </application>
 
 </manifest>
