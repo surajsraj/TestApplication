@@ -1,11 +1,8 @@
 package testapplication.com.example.sr00106369wrtc.testapplication;
 
 import android.content.SharedPreferences;
-import android.preference.PreferenceActivity;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.preference.PreferenceActivity;
 
 public class Connection_Settings extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -36,15 +33,11 @@ public class Connection_Settings extends PreferenceActivity implements SharedPre
     }
 
     // When the user changes the preferences selection,
-    // onSharedPreferenceChanged() restarts the main activity as a new
-    // task. Sets the refreshDisplay flag to "true" to indicate that
-    // the main activity should update its display.
+    // onSharedPreferenceChanged() restarts the main activity as a new task.
     // The main activity queries the PreferenceManager to get the latest settings.
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        // Sets refreshDisplay to true so that when the user returns to the main
-        // activity, the display refreshes to reflect the new settings.
-        NetworkActivity.refreshDisplay = true;
+
     }
 }

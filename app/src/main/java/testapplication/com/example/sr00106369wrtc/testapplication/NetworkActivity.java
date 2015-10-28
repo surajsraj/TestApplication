@@ -1,5 +1,6 @@
 package testapplication.com.example.sr00106369wrtc.testapplication;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -8,12 +9,15 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.CookieManager;
@@ -24,6 +28,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
+import java.util.Locale;
+
 public class NetworkActivity extends AppCompatActivity {
 
     public static final String WIFI = "Wi-Fi";
@@ -33,25 +43,55 @@ public class NetworkActivity extends AppCompatActivity {
     private static boolean wifiConnected = false;
     // Whether there is a mobile connection.
     private static boolean mobileConnected = false;
-    // Whether the display should be refreshed.
-    public static boolean refreshDisplay = true;
 
-   // public static int location_requestCode = 1;
 
     // The user's current network preference setting.
     public static String sPref = null;
 
-    public Boolean pageLoad;
-
-    public final int locationRequestCode = 1;
+        public final int locationRequestCode = 1;
 
     Handler handler = new Handler(Looper.getMainLooper());
 
     // The BroadcastReceiver that tracks network connectivity changes.
-    private NetworkReceiver receiver;
+    private BroadcastReceiver receiver;
 
     public WebView mWebView;
-    private static final String URL = "https://apprtc.appspot.com/";
+    private static final String URL = "https://google.com/";
+
+    public void showWifiIpAddress(Context myContext){
+
+        WifiManager wifiManager = (WifiManager)myContext.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        int ipAddress = wifiInfo.getIpAddress();
+        String formatIpAddress = String.format(Locale.getDefault(),"%d.%d.%d.%d",(ipAddress &0xff),(ipAddress>>8 &0xff),(ipAddress>>16 &0xff),(ipAddress>>24 &0xff));
+        Toast.makeText(myContext, "Wifi Connected with IP address:"+formatIpAddress, Toast.LENGTH_LONG).show();
+    }
+
+    public void showMobileIpAddress(Context myContext)  {
+
+        try{
+
+            for(Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();){
+                NetworkInterface intr = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAdrs = intr.getInetAddresses(); enumIpAdrs.hasMoreElements();){
+                    InetAddress inetIpAdrs = enumIpAdrs.nextElement();
+                    if(!inetIpAdrs.isLoopbackAddress()&& inetIpAdrs instanceof Inet4Address){
+                        String ipAddress = inetIpAdrs.getHostAddress().toString();
+                        Toast.makeText(myContext, "Mobile Connected with IP address:"+ipAddress, Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+
+        }catch (Exception e){
+            Log.e("Network Receiver", "Could not get Network Interface");
+        }
+
+
+    }
+
+    public void reloadPage(){
+        mWebView.loadUrl("javascript:window.location.reload( true )");
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,7 +99,48 @@ public class NetworkActivity extends AppCompatActivity {
 
         // Registers BroadcastReceiver to track network connection changes.
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        receiver = new NetworkReceiver();
+        receiver = new BroadcastReceiver(
+
+        ) {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                ConnectivityManager conn = (ConnectivityManager)
+                        context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo networkInfo = conn.getActiveNetworkInfo();
+
+                // Checks the user prefs and the network connection. Based on the result, decides whether
+                // to refresh the display or keep the current display.
+                // If the userpref is Wi-Fi only, checks to see if the device has a Wi-Fi connection.
+                if (NetworkActivity.WIFI.equals(NetworkActivity.sPref) && networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                    // If device has its Wi-Fi connection, sets refreshDisplay
+                    // to true. This causes the display to be refreshed when the user
+                    // returns to the app.
+                    reloadPage();
+                    showWifiIpAddress(context);
+
+                    // If the setting is ANY network and there is a network connection
+                    // (which by process of elimination would be mobile), sets refreshDisplay to true.
+                } else if (NetworkActivity.ANY.equals(NetworkActivity.sPref) && networkInfo != null) {
+
+                    reloadPage();
+                    if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI){
+                        showWifiIpAddress(context);
+                    }else {
+                        showMobileIpAddress(context);
+                    }
+
+
+                    // Otherwise, the app can't download content--either because there is no network
+                    // connection (mobile or Wi-Fi), or because the pref setting is WIFI, and there
+                    // is no Wi-Fi connection.
+                    // Sets refreshDisplay to false.
+                } else {
+
+                    Toast.makeText(context, "Connection lost", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        };
         this.registerReceiver(receiver, filter);
         setContentView(R.layout.activity_network);
         mWebView = (WebView)findViewById(R.id.myWebView);
@@ -169,9 +250,6 @@ public class NetworkActivity extends AppCompatActivity {
 
         updateConnectedFlags();
 
-        if(refreshDisplay){
-            loadPage();
-        }
     }
 
     // Checks the network connection and sets the wifiConnected and mobileConnected
@@ -190,25 +268,16 @@ public class NetworkActivity extends AppCompatActivity {
         }
     }
 
-    // Uses AsyncTask subclass to download the XML feed from stackoverflow.com.
-    public void loadPage() {
-        if (((sPref.equals(ANY)) && (wifiConnected || mobileConnected))
-                || ((sPref.equals(WIFI)) && (wifiConnected))) {
-            pageLoad = true;
-        } else {
-          pageLoad = false;
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
         setUpWebViewDefaults(mWebView);
-        if(pageLoad) {
+        if (((sPref.equals(ANY)) && (wifiConnected || mobileConnected))
+                || ((sPref.equals(WIFI)) && (wifiConnected))) {
             Toast.makeText(NetworkActivity.this, "Connecting to the internet", Toast.LENGTH_LONG).show();
             mWebView.loadUrl(URL);
-        }
-        else {
+
+        } else {
             Toast.makeText(NetworkActivity.this, "Could not connect to the internet", Toast.LENGTH_LONG).show();
         }
     }
@@ -254,7 +323,5 @@ public class NetworkActivity extends AppCompatActivity {
         }
     }
 
-    public void reloadPage(){
-        mWebView.loadUrl("javascript:window.location.reload( true )");
-    }
+
 }
