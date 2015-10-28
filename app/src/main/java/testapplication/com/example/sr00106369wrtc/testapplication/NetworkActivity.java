@@ -4,22 +4,20 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
-import android.os.IBinder;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.webkit.CookieManager;
+import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -43,33 +41,17 @@ public class NetworkActivity extends AppCompatActivity {
     // The user's current network preference setting.
     public static String sPref = null;
 
-    Boolean value;
+    public Boolean pageLoad;
+
+    public final int locationRequestCode = 1;
+
+    Handler handler = new Handler(Looper.getMainLooper());
 
     // The BroadcastReceiver that tracks network connectivity changes.
-    private NetworkReceiver receiver = new NetworkReceiver();
+    private NetworkReceiver receiver;
 
-    WebView mWebView;
-    private static final String URL = "https://apprtc-m.appspot.com/";
-
-    public LocationService mLocationService;
-    public boolean mBound;
-
-    ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-
-            LocationService.LocalBinder binder = (LocationService.LocalBinder)service;
-            mLocationService = binder.getservice();
-            mBound = true;
-            Log.d("NetworkActivity", "Received the service reference");
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.d("NetworkActivity", "Disconnected to service");
-            mBound = false;
-        }
-    };
+    public WebView mWebView;
+    private static final String URL = "https://apprtc.appspot.com/";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -122,19 +104,14 @@ public class NetworkActivity extends AppCompatActivity {
             startActivity(i);
         }
         if (id == R.id.action_showLocation) {
-            if(mBound){
-                mLocationService.connectService();
-                if(mLocationService.isConnected()){
-                    String locationValues = mLocationService.getValues();
-                    Toast.makeText(this,"Latitude:"+locationValues+"\n"+"Longitude:"+locationValues,Toast.LENGTH_LONG);
-                    mLocationService.disconnectService();
-                } else {
-                    Toast.makeText(this,"Could not connect to Play Services",Toast.LENGTH_LONG);
-                }
 
-            } else{
-                Toast.makeText(this,"Cannot get the location currently",Toast.LENGTH_LONG);
-            }
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Intent i = new Intent(NetworkActivity.this, LocationActivity.class);
+                    startActivityForResult(i, locationRequestCode);
+                }
+            });
         }
 
         if (id == R.id.action_showAccelerometer) {
@@ -144,6 +121,21 @@ public class NetworkActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == locationRequestCode){
+            if(resultCode == RESULT_OK){
+                String latitude = data.getStringExtra("latitude");
+                String longitude = data.getStringExtra("longitude");
+                Toast.makeText(NetworkActivity.this, "Latitude:"+latitude+"\n"+"Longitude:"+longitude, Toast.LENGTH_LONG).show();
+            }else if(resultCode == RESULT_CANCELED){
+                Toast.makeText(NetworkActivity.this, "Could not find a last location, please ensure location service is turned on", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override
@@ -158,10 +150,7 @@ public class NetworkActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if(mBound){
-            unbindService(mConnection);
-            mBound = false;
-        }
+
     }
 
     // Refreshes the display if the network connection and the
@@ -183,8 +172,6 @@ public class NetworkActivity extends AppCompatActivity {
         if(refreshDisplay){
             loadPage();
         }
-        Intent i = new Intent(this,LocationService.class);
-        bindService(i, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     // Checks the network connection and sets the wifiConnected and mobileConnected
@@ -207,9 +194,9 @@ public class NetworkActivity extends AppCompatActivity {
     public void loadPage() {
         if (((sPref.equals(ANY)) && (wifiConnected || mobileConnected))
                 || ((sPref.equals(WIFI)) && (wifiConnected))) {
-            value = true;
+            pageLoad = true;
         } else {
-          value = false;
+          pageLoad = false;
         }
     }
 
@@ -217,7 +204,7 @@ public class NetworkActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         setUpWebViewDefaults(mWebView);
-        if(value) {
+        if(pageLoad) {
             Toast.makeText(NetworkActivity.this, "Connecting to the internet", Toast.LENGTH_LONG).show();
             mWebView.loadUrl(URL);
         }
@@ -252,7 +239,12 @@ public class NetworkActivity extends AppCompatActivity {
             WebView.setWebContentsDebuggingEnabled(true);
         }
 
-        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onPermissionRequest(PermissionRequest request) {
+                request.grant(request.getResources());
+            }
+        });
         webView.setWebViewClient(new WebViewClient());
 
         // AppRTC requires third party cookies to work
@@ -260,5 +252,9 @@ public class NetworkActivity extends AppCompatActivity {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cookieManager.setAcceptThirdPartyCookies(mWebView, true);
         }
+    }
+
+    public void reloadPage(){
+        mWebView.loadUrl("javascript:window.location.reload( true )");
     }
 }

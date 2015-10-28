@@ -5,11 +5,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.util.Log;
 import android.widget.Toast;
+
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
+import java.util.Locale;
 
 public class NetworkReceiver extends BroadcastReceiver {
 
@@ -27,12 +32,20 @@ public class NetworkReceiver extends BroadcastReceiver {
             // to true. This causes the display to be refreshed when the user
             // returns to the app.
             NetworkActivity.refreshDisplay = true;
-            Toast.makeText(context, "Wifi Connected", Toast.LENGTH_SHORT).show();
+
+            showWifiIpAddress(context);
 
             // If the setting is ANY network and there is a network connection
             // (which by process of elimination would be mobile), sets refreshDisplay to true.
         } else if (NetworkActivity.ANY.equals(NetworkActivity.sPref) && networkInfo != null) {
             NetworkActivity.refreshDisplay = true;
+
+            if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI){
+                showWifiIpAddress(context);
+            }else {
+                showMobileIpAddress(context);
+            }
+
 
             // Otherwise, the app can't download content--either because there is no network
             // connection (mobile or Wi-Fi), or because the pref setting is WIFI, and there
@@ -42,5 +55,36 @@ public class NetworkReceiver extends BroadcastReceiver {
             NetworkActivity.refreshDisplay = false;
             Toast.makeText(context, "Connection lost", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void showWifiIpAddress(Context myContext){
+
+        WifiManager wifiManager = (WifiManager)myContext.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        int ipAddress = wifiInfo.getIpAddress();
+        String formatIpAddress = String.format(Locale.getDefault(),"%d.%d.%d.%d",(ipAddress &0xff),(ipAddress>>8 &0xff),(ipAddress>>16 &0xff),(ipAddress>>24 &0xff));
+        Toast.makeText(myContext, "Wifi Connected with IP address:"+formatIpAddress, Toast.LENGTH_LONG).show();
+    }
+
+    public void showMobileIpAddress(Context myContext)  {
+
+        try{
+
+            for(Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();){
+                NetworkInterface intr = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAdrs = intr.getInetAddresses(); enumIpAdrs.hasMoreElements();){
+                    InetAddress inetIpAdrs = enumIpAdrs.nextElement();
+                    if(!inetIpAdrs.isLoopbackAddress()&& inetIpAdrs instanceof Inet4Address){
+                        String ipAddress = inetIpAdrs.getHostAddress().toString();
+                        Toast.makeText(myContext, "Mobile Connected with IP address:"+ipAddress, Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+
+        }catch (Exception e){
+            Log.e("Network Receiver","Could not get Network Interface");
+        }
+
+
     }
 }

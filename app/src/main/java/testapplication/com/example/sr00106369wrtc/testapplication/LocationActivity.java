@@ -18,6 +18,7 @@ public class LocationActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     GoogleApiClient mGoogleApiClient;
+    Intent resultIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,17 +46,18 @@ public class LocationActivity extends AppCompatActivity implements
     public void onConnected(Bundle connectionHint) {
         Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
+        resultIntent = getIntent();
         if (mLastLocation != null) {
-
-            Log.d("location activity","lastlocation found");
-            Intent resultIntent = getIntent();
+            Log.d("location activity", "lastlocation found");
             resultIntent.putExtra("latitude", String.valueOf(mLastLocation.getLatitude()));
             resultIntent.putExtra("longitude", String.valueOf(mLastLocation.getLongitude()));
             setResult(RESULT_OK, resultIntent);
-            Log.d("location activity", "result set");
             finish();
         }
-
+        else{
+            setResult(RESULT_CANCELED,resultIntent);
+            finish();
+        }
     }
 
     @Override
