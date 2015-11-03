@@ -2,8 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="testapplication.com.example.sr00106369wrtc.testapplication.NetworkActivity">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/action_dial" android:title="@string/action_dial"
         android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/action_contacts" android:title="@string/action_contacts"
@@ -13,5 +11,7 @@
     <item android:id="@+id/action_showLocation" android:title="@string/action_showLocation"
         android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/action_showAccelerometer" android:title="@string/action_showAccelerometer"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_notify" android:title="@string/action_notify"
         android:orderInCategory="100" app:showAsAction="never" />
 </menu>

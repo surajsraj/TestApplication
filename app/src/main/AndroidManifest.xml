@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="testapplication.com.example.sr00106369wrtc.testapplication" >
 
+    <uses-sdk
+        android:minSdkVersion="19"
+        android:targetSdkVersion="23" />
+
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -9,19 +13,22 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <uses-feature android:name="android.hardware.camera2" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-feature android:name="android.hardware.camera.front" />
-    <uses-sdk android:minSdkVersion="19"
-              android:targetSdkVersion="23"/>
+
+
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:permission="android.permission.VIBRATE"
-        android:theme="@style/AppTheme"
-        >
+        android:theme="@style/AppTheme" >
         <receiver android:name=".MyWidget" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -42,29 +49,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Destination"
-            android:label="@string/title_activity_destination"
-            android:parentActivityName=".MainActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="testapplication.com.example.sr00106369wrtc.testapplication.MainActivity" />
-        </activity>
-        <activity
-            android:name=".Connection_Settings"
-            android:label="@string/title_activity_connection__settings"
-            android:parentActivityName=".MainActivity" >
-            <intent-filter>
-                <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="testapplication.com.example.sr00106369wrtc.testapplication.MainActivity" />
-        </activity>
-        <activity
             android:name=".NetworkActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_network" >
         </activity>
         <activity
@@ -81,7 +67,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="testapplication.com.example.sr00106369wrtc.testapplication.NetworkActivity" />
         </activity>
-
+        <activity
+            android:name=".NotifyActivity"
+            android:label="@string/title_activity_notify"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:noHistory="true">
+        </activity>
     </application>
 
 </manifest>
